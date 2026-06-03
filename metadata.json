@@ -1,0 +1,8 @@
+{
+  "name": "Remix: Document Extraction Engine",
+  "description": "An AI-powered engine for extracting structured data from accounting documents.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
