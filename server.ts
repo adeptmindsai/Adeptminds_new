@@ -244,28 +244,7 @@ app.post("/api/extract-to-excel", upload.single("document"), async (req, res) =>
     // Create Excel Workbook
     const wb = XLSX.utils.book_new();
 
-    // Sheet 1: Documents mapping list (ensure at least 1 row to prevent blank sheet corruption)
-    const docSheetData = pages.length > 0 ? pages.map((page: any, idx: number) => ({
-      "Page": page.traceability?.page_number || (idx + 1),
-      "Type": page.document_type || '',
-      "Supplier": page.header?.supplier_name || 'N/A',
-      "Customer": page.header?.customer_name || 'N/A',
-      "Date": page.header?.date || 'N/A',
-      "Total Amount": page.header?.total_amount || 'N/A',
-      "Tax Amount": page.header?.tax_amount || 'N/A'
-    })) : [{
-      "Page": "N/A",
-      "Type": "No documents parsed.",
-      "Supplier": "N/A",
-      "Customer": "N/A",
-      "Date": "N/A",
-      "Total Amount": "N/A",
-      "Tax Amount": "N/A"
-    }];
-    const docWS = XLSX.utils.json_to_sheet(docSheetData);
-    XLSX.utils.book_append_sheet(wb, docWS, "Sheet 1 - Documents");
-
-    // Sheet 2: Line Items mapping list (ensure at least 1 row to prevent blank sheet corruption)
+    // Sheet 1: Line Items mapping list (ensure at least 1 row to prevent blank sheet corruption)
     const lineSheetData = pages.flatMap((page: any) => {
       const pageNum = page.traceability?.page_number || 1;
       const supplierName = page.header?.supplier_name || 'N/A';
@@ -299,33 +278,7 @@ app.post("/api/extract-to-excel", upload.single("document"), async (req, res) =>
       "Tax": "N/A",
       "Total": "N/A"
     }]);
-    XLSX.utils.book_append_sheet(wb, lineWS, "Sheet 2 - Line Items");
-
-    // Sheet 3: Exceptions mapping warnings (ensure at least 1 row to prevent blank sheet corruption)
-    const expSheetData = pages.flatMap((page: any) => {
-      const warns: any[] = [];
-      const trace = page.traceability;
-      if (trace) {
-        if (trace.duplicate_warning) {
-          warns.push({
-            "Page": trace.page_number,
-            "Warning": "Duplicate page signature flagged in workbook scope."
-          });
-        }
-        if (trace.ocr_uncertainty_warning) {
-          warns.push({
-            "Page": trace.page_number,
-            "Warning": trace.ocr_uncertainty_warning
-          });
-        }
-      }
-      return warns;
-    });
-    const expWS = XLSX.utils.json_to_sheet(expSheetData.length > 0 ? expSheetData : [{
-      "Page": "N/A",
-      "Warning": "No exceptions flagged in workbook scope."
-    }]);
-    XLSX.utils.book_append_sheet(wb, expWS, "Sheet 3 - Exceptions");
+    XLSX.utils.book_append_sheet(wb, lineWS, "Line Items");
 
     // Convert structured sheets to static buffer native to Node
     console.log("[Excel Automation API] Writing Excel binary stream...");
